@@ -1,8 +1,9 @@
 # --- ETAPA 1: Compilación ---
-FROM node:18-alpine AS build-stage
+# Cambiamos a Node 22 para cumplir con los requisitos de Vite
+FROM node:22-alpine AS build-stage
 WORKDIR /app
 
-# Instalamos dependencias
+# Instalamos dependencias (aprovechando el cache de capas)
 COPY package*.json ./
 RUN npm install
 
@@ -13,11 +14,10 @@ RUN npm run build
 # --- ETAPA 2: Producción con Nginx ---
 FROM nginx:stable-alpine AS production-stage
 
-# Copiamos los archivos compilados desde la etapa anterior
-# IMPORTANTE: Vue suele generar la carpeta 'dist'. Si la tuya es 'build', cambia dist por build.
+# Vite genera los archivos en la carpeta 'dist'
 COPY --from=build-stage /app/dist /usr/share/nginx/html
 
-# Configuramos Nginx para que soporte el enrutamiento de Vue (SPA)
+# Configuramos Nginx para manejar el routing de Vue (Single Page Application)
 RUN echo 'server { \
     listen 80; \
     location / { \
