@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import axios from 'axios';
+import api from '../api/axiosConfig'; // Importa tu instancia
 
 export const useAuthStore = defineStore('auth', {
   state: () => ({
@@ -15,7 +16,7 @@ export const useAuthStore = defineStore('auth', {
   actions: {
     async login(credenciales) {
       try {
-        const response = await axios.post('http://localhost:8087/api/v1/auth/login', credenciales);
+        const response = await api.post('/auth/login', credenciales);
         
         const { token, usuario, sessionId } = response.data;
 

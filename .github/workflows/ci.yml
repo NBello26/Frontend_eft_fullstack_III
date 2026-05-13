@@ -25,7 +25,10 @@ jobs:
 
       - name: Build and Push a ECR
         run: |
-          docker build -t ${{ secrets.ECR_REPO_URL_FRONTEND }}:latest .
+          # Importante: VITE_API_URL se pone como /api/v1 para que use el proxy de Nginx
+          docker build \
+            --build-arg VITE_API_URL="/api/v1" \
+            -t ${{ secrets.ECR_REPO_URL_FRONTEND }}:latest .
           docker push ${{ secrets.ECR_REPO_URL_FRONTEND }}:latest
 
       - name: Desplegar Frontend vía SSM
@@ -40,7 +43,7 @@ jobs:
                 "docker pull ${{ secrets.ECR_REPO_URL_FRONTEND }}:latest",
                 "docker stop frontend-vue || true",
                 "docker rm frontend-vue || true",
-                "docker run -d --name frontend-vue -p 80:80 ${{ secrets.ECR_REPO_URL_FRONTEND }}:latest"
+                "docker run -d --name frontend-vue -p 80:80 -e BFF_PRIVATE_IP=${{ secrets.BFF_PRIVATE_IP }} ${{ secrets.ECR_REPO_URL_FRONTEND }}:latest"
               ]
             }' \
             --query "Command.CommandId" \

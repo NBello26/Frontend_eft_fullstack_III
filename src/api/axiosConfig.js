@@ -2,7 +2,8 @@ import axios from 'axios';
 
 // Instancia base apuntando a nuestro BFF / Gateway
 const api = axios.create({
-  baseURL: 'http://localhost:8087/api/v1',
+  // Si existe la variable de entorno la usa, si no, usa localhost (para tu dev local)
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8087/api/v1',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
