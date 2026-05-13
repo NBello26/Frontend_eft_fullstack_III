@@ -57,4 +57,4 @@ Este ecosistema está compuesto por múltiples microservicios. Puedes explorar e
 * 🧩 [Coincidencias_eft_fullstack_III](https://github.com/NBello26/Coincidencias_eft_fullstack_III)
 
 ---
-*Desarrollado como parte del proyecto final de integración Fullstack.*
+*Desarrollado como parte del proyecto de integración Devops.*
