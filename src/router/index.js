@@ -20,7 +20,7 @@ const routes = [
   {
     path: '/mascotas',
     name: 'mascotas',
-    // Este será nuestro contenedor principal que consumirá el BFF!!!!!
+    // Este será nuestro contenedor principal que consumirá el BFF!!!!!a
     component: () => import('../views/MascotasView.vue')
   },
   {
