@@ -100,6 +100,7 @@ import { useRouter, useRoute } from 'vue-router';
 import axios from 'axios';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import api from '../api/axiosConfig.js';
 
 const router = useRouter();
 const route = useRoute(); // Usamos useRoute para leer el ID dinámicamente siempre
@@ -191,7 +192,7 @@ const cargarDetalle = async () => {
   const idMascota = route.params.id; 
 
   try {
-    const response = await api.get(`/web/mascotas/detalle/${idMascota}`);
+    const response = await api.get('/web/mascotas/detalle/${idMascota}');
     mascota.value = response.data;
     
     // Dibujar el mapa DESPUÉS de que Vue procese el v-if="mascota"
