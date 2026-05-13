@@ -1,61 +1,60 @@
-# Sanos y Salvos - Red de Reencuentro de Mascotas 🐾
+# 🖥️ Frontend - Sistema de Gestión de Mascotas
 
-Este proyecto es una plataforma distribuida basada en microservicios diseñada para facilitar el reencuentro de mascotas extraviadas mediante geolocalización y un motor de coincidencias fenotípicas.
+Este repositorio contiene la aplicación **Frontend** (construida en Vue.js) para el Sistema de Gestión de Mascotas. Actúa como la interfaz de usuario principal, comunicándose de forma segura con los microservicios del backend a través de un **BFF (Backend For Frontend)** utilizando Nginx como Reverse Proxy.
 
-## 🧠 Decisiones de Arquitectura: Frontend
+## 🚀 Arquitectura y Despliegue
 
-### 1. Diagnóstico del Proyecto
+Este proyecto está completamente dockerizado y cuenta con un pipeline de **Integración y Despliegue Continuo (CI/CD)** implementado con GitHub Actions. 
 
-¿Cuál es el problema que tiene el proyecto hoy?  
-Antes de la implementación del patrón de diseño, el frontend presentaba un **acoplamiento estrecho** entre la lógica de consumo de datos y la representación visual. Dado que el sistema interactúa con múltiples microservicios (Mascotas, Usuarios, Geolocalización y Motor de Coincidencias) a través de un **API Gateway**, el código de los componentes se volvía denso, difícil de testear y poco reutilizable.
+El flujo de despliegue automatizado realiza las siguientes acciones:
+1. Compila el proyecto de Vue.js (Node 22).
+2. Construye una imagen Docker basada en **Nginx**.
+3. Sube la imagen a **Amazon Elastic Container Registry (ECR)**.
+4. Despliega la nueva imagen en una instancia **Amazon EC2** a través de AWS Systems Manager (SSM).
 
-### 2. Patrón de Diseño Seleccionado
+### 🌐 Ecosistema de Infraestructura en AWS
+Este microservicio es parte de una arquitectura distribuida alojada en AWS, distribuida en los siguientes nodos (EC2):
 
-El patrón que mejor se adapta al proyecto es el **Patrón C: Container / Presenter** (Componentes Inteligentes y Tontos).
+* **Nodo Web:** ApiGateway y **Frontend** (Este repositorio) 📍
+* **Nodo Back 1:** Eureka Server y BFF (Backend For Frontend)
+* **Nodo Back 2:** Microservicios de Mascotas y Usuarios
+* **Nodo Back 3:** Microservicios de Geolocalización y Notificaciones
+* **Nodo Back 4:** Motor de Coincidencias
+* **Base de Datos:** SanosDB (PostgreSQL)
 
-### 3. Justificación de la Elección
+## 🛠️ Tecnologías Principales
 
-Consideramos que este patrón es el ideal para el estado actual de "Sanos y Salvos" por las siguientes razones:
+* **Framework:** Vue.js 3 / Vite
+* **Servidor Web / Proxy:** Nginx (Alpine)
+* **Contenedores:** Docker
+* **CI/CD:** GitHub Actions
+* **Cloud (AWS):** EC2, ECR, SSM, IAM
 
-* **Separación de Responsabilidades:** Permite aislar la lógica de orquestación de llamadas al Gateway (Container) del diseño visual de las interfaces (Presenter).
-* **Mantenibilidad:** Facilita la actualización de la lógica de negocio (como el manejo de sesiones de usuario o filtros de búsqueda) sin alterar el diseño de la UI.
-* **Testeabilidad:** Los componentes "Presenters" se vuelven puramente visuales, facilitando pruebas unitarias mediante *props* y *events*.
-* **Escalabilidad:** Permite integrar nuevos microservicios de forma modular siguiendo una estructura de carpetas clara y predecible.
+## ⚙️ Configuración de Nginx (Reverse Proxy)
+
+Para garantizar la seguridad y no exponer las IPs privadas del backend al navegador del cliente, este frontend utiliza un enfoque de **Reverse Proxy**. 
+
+Todas las peticiones que el cliente realiza a `/api/*` son interceptadas por el servidor Nginx (en el contenedor Docker) y redirigidas internamente a la IP privada de la instancia EC2 que aloja el **BFF**. Esto mantiene nuestra red interna de microservicios y Eureka 100% aislada del internet público.
+
+## 📦 Repositorios del Proyecto
+
+Este ecosistema está compuesto por múltiples microservicios. Puedes explorar el código fuente de cada uno de ellos en los siguientes enlaces:
+
+**Frontend y Puertas de Enlace**
+* 🌐 [Frontend_eft_fullstack_III](https://github.com/NBello26/Frontend_eft_fullstack_III) *(Estás aquí)*
+* 🚪 [ApiGateway_eft_fullstack_III](https://github.com/NBello26/ApiGateway_eft_fullstack_III)
+* 🌉 [BFF_eft_fullstack_III](https://github.com/NBello26/BFF_eft_fullstack_III)
+
+**Descubrimiento y Base de Datos**
+* 🧭 [Eureka_eft_fullstack_III](https://github.com/NBello26/Eureka_eft_fullstack_III)
+* 🗄️ [BD_eft_fullstack_III](https://github.com/NBello26/BD_eft_fullstack_III)
+
+**Microservicios de Negocio**
+* 🐾 [Reporte_Mascota_eft_fullstack_III](https://github.com/NBello26/Reporte_Mascota_eft_fullstack_III)
+* 👤 [Usuarios_eft_fullstack_III](https://github.com/NBello26/Usuarios_eft_fullstack_III)
+* 📍 [Geolocalizacion_eft_fullstack_III](https://github.com/NBello26/Geolocalizacion_eft_fullstack_III)
+* 🔔 [Notificaciones_eft_fullstack_III](https://github.com/NBello26/Notificaciones_eft_fullstack_III)
+* 🧩 [Coincidencias_eft_fullstack_III](https://github.com/NBello26/Coincidencias_eft_fullstack_III)
 
 ---
-
-## 📂 Estructura de Carpetas (Frontend - Vue.js)
-
-Siguiendo el patrón **Container / Presenter**, el proyecto se organiza de la siguiente manera:
-
-```text
-src/
-├── services/              # Abstracción de APIs (Capa de comunicación)
-│   ├── api.js             # Configuración base de Axios / Gateway
-│   ├── mascotaService.js  # Microservicio de Mascotas
-│   ├── userService.js     # Microservicio de Usuarios (Auth y Sesión)
-│   ├── geoService.js      # Microservicio de Geolocalización
-│   └── motorService.js    # Microservicio de Coincidencias
-│
-├── containers/            # COMPONENTES INTELIGENTES (Lógica y Datos)
-│   ├── LoginContainer.vue
-│   ├── BusquedaMascotasContainer.vue
-│   ├── PerfilUsuarioContainer.vue
-│   └── RegistroReporteContainer.vue
-│
-├── components/            # COMPONENTES PRESENTADORES (UI / Visual)
-│   ├── common/            # Botones, Inputs y Modales genéricos
-│   ├── Mascotas/          # CardMascota.vue, ListaMascotas.vue
-│   ├── Usuarios/          # FormLogin.vue, UserProfileCard.vue
-│   └── Mapa/              # MarcadorMapa.vue, VistaMapa.vue
-│
-├── views/                 # Páginas (Rutas de Vue Router)
-└── App.vue
-
-```
-
-## Links
-
-Repositorio backend: https://github.com/Raynagah/backend-eft-fullstack-III.git
-
-Link repositorio principal: https://github.com/Raynagah/EFT-Desarrollo-Fullstack-III.git
+*Desarrollado como parte del proyecto final de integración Fullstack.*
