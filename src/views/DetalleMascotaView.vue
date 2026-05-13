@@ -192,7 +192,7 @@ const cargarDetalle = async () => {
   const idMascota = route.params.id; 
 
   try {
-    const response = await api.get('/web/mascotas/detalle/${idMascota}');
+    const response = await api.get(`/web/mascotas/detalle/${idMascota}`);
     mascota.value = response.data;
     
     // Dibujar el mapa DESPUÉS de que Vue procese el v-if="mascota"
