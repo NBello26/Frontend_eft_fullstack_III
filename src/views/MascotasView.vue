@@ -6,12 +6,22 @@
     </div>
 
     <div class="filtros-section">
-      <label for="filtro">Filtrar por: </label>
-      <select id="filtro" v-model="filtroSeleccionado" class="filtro-select">
-        <option value="TODOS">Todas las mascotas</option>
-        <option value="PERDIDA">Perdidas</option>
-        <option value="ENCONTRADA">Encontradas</option>
-      </select>
+      <div class="filtro-grupo">
+        <label for="filtro">Filtrar por: </label>
+        <select id="filtro" v-model="filtroSeleccionado" class="filtro-select">
+          <option value="TODOS">Todas las mascotas</option>
+          <option value="PERDIDA">Perdidas</option>
+          <option value="ENCONTRADA">Encontradas</option>
+        </select>
+      </div>
+
+      <div class="filtro-grupo">
+        <label for="orden">Ordenar por fecha: </label>
+        <select id="orden" v-model="ordenFecha" class="filtro-select">
+          <option value="DESC">Más recientes primero</option>
+          <option value="ASC">Más antiguas primero</option>
+        </select>
+      </div>
     </div>
 
     <div v-if="cargando" class="estado-mensaje loader">
@@ -28,7 +38,7 @@
     </div>
 
     <div v-if="!cargando && !error && mascotasFiltradas.length === 0" class="estado-mensaje vacio">
-      <p>No se encontraron mascotas con este filtro.</p>
+      <p>No se encontraron mascotas con estos criterios.</p>
     </div>
   </div>
 </template>
@@ -36,17 +46,18 @@
 <script setup>
 import { ref, onMounted, computed } from 'vue';
 import api from '../api/axiosConfig.js';
-// 4. Asegúrate de importar el componente (ajusta la ruta según tus carpetas)
 import MascotaCard from '../components/mascotas/MascotaCard.vue';
 
 const mascotas = ref([]);
 const cargando = ref(true);
-const error = ref(null); // Agregamos la variable de error
+const error = ref(null);
 const filtroSeleccionado = ref('TODOS');
+// NUEVO: Estado para el ordenamiento (por defecto mostramos lo más nuevo primero)
+const ordenFecha = ref('DESC'); 
 
 const obtenerMascotas = async () => {
   cargando.value = true;
-  error.value = null; // Limpiamos el error al reintentar
+  error.value = null;
   try {
     const response = await api.get('/web/mascotas');
 
@@ -56,18 +67,32 @@ const obtenerMascotas = async () => {
     console.log("Mascotas cargadas:", mascotas.value);
   } catch (err) {
     console.error("Error al cargar mascotas:", err);
-    // Guardamos el mensaje de error para mostrarlo en el HTML
     error.value = err.message || "No se pudo conectar con el servidor.";
   } finally {
     cargando.value = false;
   }
 };
 
+// MODIFICADO: Ahora filtra y luego ordena
 const mascotasFiltradas = computed(() => {
-  if (filtroSeleccionado.value === 'TODOS') return mascotas.value;
+  // 1. Aplicamos el filtro por tipo
+  let resultado = mascotas.value;
+  if (filtroSeleccionado.value !== 'TODOS') {
+    resultado = resultado.filter(m => m.tipoReporte === filtroSeleccionado.value);
+  }
 
-  return mascotas.value.filter(m => {
-    return m.tipoReporte === filtroSeleccionado.value;
+  // 2. Aplicamos el ordenamiento por fecha
+  // Nota: Usamos [...resultado] (o resultado ya filtrado) para no mutar el array original
+  return resultado.sort((a, b) => {
+    // Si no hay fecha, usamos 0 como fallback para evitar errores
+    const fechaA = new Date(a.fechaReporte || 0).getTime();
+    const fechaB = new Date(b.fechaReporte || 0).getTime();
+
+    if (ordenFecha.value === 'DESC') {
+      return fechaB - fechaA; // DESC: Los más grandes (recientes) primero
+    } else {
+      return fechaA - fechaB; // ASC: Los más pequeños (antiguos) primero
+    }
   });
 });
 
@@ -95,22 +120,42 @@ onMounted(obtenerMascotas);
   font-size: 1.1rem;
 }
 
-/* Estilos para el filtro */
+/* NUEVO CSS: Mejorando la sección de filtros con Flexbox */
 .filtros-section {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  gap: 2rem; /* Espacio entre los grupos de filtros */
   margin-bottom: 2rem;
+  flex-wrap: wrap; /* Para que en móviles se pongan uno debajo del otro */
+}
+
+.filtro-grupo {
+  display: flex;
+  align-items: center;
+  background: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.filtro-grupo label {
+  font-weight: 600;
+  color: #4a5568;
 }
 
 .filtro-select {
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
-  margin-left: 0.5rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e0;
+  font-size: 0.95rem;
+  margin-left: 0.8rem;
   outline: none;
+  background-color: #f8f9fa;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
 }
 
-.filtro-select:focus {
+.filtro-select:focus, .filtro-select:hover {
   border-color: var(--color-primary, #2c3e50);
 }
 
