@@ -2,8 +2,7 @@ import axios from 'axios';
 
 // Instancia base apuntando a nuestro BFF / Gateway
 const api = axios.create({
-  // Si existe la variable de entorno la usa, si no, usa localhost (para tu dev local)
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:8087/api/v1',
+  baseURL: 'http://localhost:8087/api/v1',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
@@ -30,9 +29,16 @@ api.interceptors.response.use(
   response => response,
   error => {
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-      console.warn("Sesión expirada o no autorizada. Redirigiendo al login...");
-      localStorage.clear();
-      globalThis.location.href = '/login';
+      
+      // Verificamos de qué endpoint vino el error
+      const isLoginRequest = error.config && error.config.url && error.config.url.includes('/auth/login');
+      
+      // Si NO es un intento de login, entonces sí limpiamos y recargamos
+      if (!isLoginRequest) {
+        console.warn("Sesión expirada o no autorizada. Redirigiendo al login...");
+        localStorage.clear();
+        globalThis.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }

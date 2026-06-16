@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # Servicio 1: Tu aplicación Frontend (Despliegue/Desarrollo)
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vue_frontend
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+    # No necesitamos declarar "command" aquí porque automáticamente 
+    # usará el CMD de tu Dockerfile: ["npm", "run", "dev", "--", "--host"]
+
+  # Servicio 2: Tu entorno de pruebas (Vitest UI)
+  test-frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vue_vitest_runner
+    # Cambiado a solo --ui, la configuración de red ya está en el vite.config.js
+    command: npx vitest --ui
+    ports:
+      - "51204:51204"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=test
