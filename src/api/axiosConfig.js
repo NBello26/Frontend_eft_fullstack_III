@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Instancia base apuntando a nuestro BFF / Gateway
 const api = axios.create({
-  baseURL: 'http://localhost:8087/api/v1',
+  baseURL: '/api/v1',
   headers: {
     'Content-Type': 'application/json',
     'Accept': 'application/json'
