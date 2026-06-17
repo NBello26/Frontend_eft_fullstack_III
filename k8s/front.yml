@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: front-app
-        image: 782424855823.dkr.ecr.us-east-1.amazonaws.com/frontend:${IMAGE_TAG}
+        image: 085985863834.dkr.ecr.us-east-1.amazonaws.com/frontend:${IMAGE_TAG}
         ports:
         - containerPort: 80
         env:
