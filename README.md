@@ -1,61 +1,65 @@
-# Sanos y Salvos - Red de Reencuentro de Mascotas 🐾
+# 🌐 Frontend - Sistema de Gestión de Mascotas
 
-Este proyecto es una plataforma distribuida basada en microservicios diseñada para facilitar el reencuentro de mascotas extraviadas mediante geolocalización y un motor de coincidencias fenotípicas.
+Este repositorio contiene la aplicación **Frontend**, la interfaz de usuario principal dentro del Sistema de Gestión de Mascotas. Su rol principal es ofrecer una experiencia intuitiva, interactiva y responsiva para que los usuarios puedan registrar a sus mascotas, reportar pérdidas o hallazgos, visualizar mapas de geolocalización y gestionar sus perfiles y alertas de notificaciones.
 
-## 🧠 Decisiones de Arquitectura: Frontend
+La aplicación se comunica de forma centralizada con el ecosistema a través del **BFF (Backend-for-Frontend)** y el **ApiGateway**.
 
-### 1. Diagnóstico del Proyecto
+## 🚀 Arquitectura y Prácticas DevOps
 
-¿Cuál es el problema que tiene el proyecto hoy?  
-Antes de la implementación del patrón de diseño, el frontend presentaba un **acoplamiento estrecho** entre la lógica de consumo de datos y la representación visual. Dado que el sistema interactúa con múltiples microservicios (Mascotas, Usuarios, Geolocalización y Motor de Coincidencias) a través de un **API Gateway**, el código de los componentes se volvía denso, difícil de testear y poco reutilizable.
+Al ser la capa de presentación de cara al usuario, este servicio está optimizado para compilarse y servirse de forma eficiente. Su ciclo de vida y despliegue está totalmente automatizado mediante un pipeline de **CI/CD con GitHub Actions**:
 
-### 2. Patrón de Diseño Seleccionado
+1. **Validación:** Realiza el análisis estático de código (Linting) y verifica la integridad del proyecto.
+2. **Compilación (Build):** Genera los artefactos estáticos de producción optimizados (HTML, CSS, JavaScript).
+3. **Contenedorización:** Empaqueta los archivos estáticos dentro de una imagen de Docker utilizando un servidor web ligero y de alto rendimiento (como **Nginx**).
+4. **Registro:** Sube la imagen a **Amazon Elastic Container Registry (ECR)**.
+5. **Despliegue automatizado:** Ejecuta un despliegue remoto y seguro en la instancia **EC2** correspondiente (**Nodo Web**) mediante **AWS Systems Manager (SSM)**.
+6. **Inyección de Configuración:** Inyecta variables de entorno esenciales (como las URLs base de la API, entornos de producción y llaves públicas de servicios externos) directamente en la configuración del servidor web durante el tiempo de ejecución o compilación.
 
-El patrón que mejor se adapta al proyecto es el **Patrón C: Container / Presenter** (Componentes Inteligentes y Tontos).
+### 🌐 Ecosistema de Infraestructura en AWS
+Este componente opera en el nodo orientado al cliente externo, optimizando la latencia y la entrega de recursos al compartir entorno de red con la puerta de enlace pública:
 
-### 3. Justificación de la Elección
+* **Nodo Web:** ApiGateway y **Frontend** (Este repositorio) 🌐
+* **Nodo Back 1:** Eureka Server y BFF
+* **Nodo Back 2:** Microservicios de Mascotas y Usuarios
+* **Nodo Back 3:** Microservicio de Geolocalización y Microservicio de Notificaciones
+* **Nodo Back 4:** Motor de Coincidencias
+* **Base de Datos:** SanosDB (PostgreSQL)
 
-Consideramos que este patrón es el ideal para el estado actual de "Sanos y Salvos" por las siguientes razones:
+## 🛠️ Tecnologías Principales
 
-* **Separación de Responsabilidades:** Permite aislar la lógica de orquestación de llamadas al Gateway (Container) del diseño visual de las interfaces (Presenter).
-* **Mantenibilidad:** Facilita la actualización de la lógica de negocio (como el manejo de sesiones de usuario o filtros de búsqueda) sin alterar el diseño de la UI.
-* **Testeabilidad:** Los componentes "Presenters" se vuelven puramente visuales, facilitando pruebas unitarias mediante *props* y *events*.
-* **Escalabilidad:** Permite integrar nuevos microservicios de forma modular siguiendo una estructura de carpetas clara y predecible.
+* **Framework / Librería:** SPA moderna (React.js / Angular / Vue.js con TypeScript)*
+* **Servidor Web Productivo:** Nginx (dentro del contenedor Docker)
+* **Herramientas de Construcción:** Vite / Webpack / npm
+* **Contenedores:** Docker
+* **CI/CD:** GitHub Actions
+* **Infraestructura AWS:** EC2, ECR, SSM, IAM
+
+_*Nota: Adapta el framework exacto de la primera viñeta (Ej. React.js) según la tecnología específica que hayas implementado._
+
+## ⚙️ Integración y Redes
+
+* **Consumo de APIs:** El Frontend no realiza peticiones directas a los microservicios internos. Todas las interacciones con el ecosistema se canalizan a través de las puertas de enlace (`BFF` / `ApiGateway`), garantizando el desacoplamiento y manteniendo segura la topología interna de la VPC de AWS.
+* **Acceso Público:** A diferencia de los microservicios de negocio encapsulados en subredes privadas, el Frontend se aloja en el **Nodo Web**, permitiendo el tráfico público bajo protocolos seguros (HTTP/HTTPS) para ser accesible desde cualquier navegador web.
+
+## 📦 Repositorios del Proyecto
+
+Explora el resto de la infraestructura y microservicios de este ecosistema:
+
+**Frontend y Puertas de Enlace**
+* 🌐 [Frontend_eft_fullstack_III](https://github.com/NBello26/Frontend_eft_fullstack_III) *(Estás aquí)*
+* 🚪 [ApiGateway_eft_fullstack_III](https://github.com/NBello26/ApiGateway_eft_fullstack_III)
+* 🌉 [BFF_eft_fullstack_III](https://github.com/NBello26/BFF_eft_fullstack_III)
+
+**Descubrimiento y Base de Datos**
+* 🧭 [Eureka_eft_fullstack_III](https://github.com/NBello26/Eureka_eft_fullstack_III)
+* 🗄️ [BD_eft_fullstack_III](https://github.com/NBello26/BD_eft_fullstack_III)
+
+**Microservicios de Negocio**
+* 🐾 [Reporte_Mascota_eft_fullstack_III](https://github.com/NBello26/Reporte_Mascota_eft_fullstack_III)
+* 👤 [Usuarios_eft_fullstack_III](https://github.com/NBello26/Usuarios_eft_fullstack_III)
+* 📍 [Geolocalizacion_eft_fullstack_III](https://github.com/NBello26/Geolocalizacion_eft_fullstack_III)
+* 🔔 [Notificaciones_eft_fullstack_III](https://github.com/NBello26/Notificaciones_eft_fullstack_III)
+* 🧩 [Coincidencias_eft_fullstack_III](https://github.com/NBello26/Coincidencias_eft_fullstack_III)
 
 ---
-
-## 📂 Estructura de Carpetas (Frontend - Vue.js)
-
-Siguiendo el patrón **Container / Presenter**, el proyecto se organiza de la siguiente manera:
-
-```text
-src/
-├── services/              # Abstracción de APIs (Capa de comunicación)
-│   ├── api.js             # Configuración base de Axios / Gateway
-│   ├── mascotaService.js  # Microservicio de Mascotas
-│   ├── userService.js     # Microservicio de Usuarios (Auth y Sesión)
-│   ├── geoService.js      # Microservicio de Geolocalización
-│   └── motorService.js    # Microservicio de Coincidencias
-│
-├── containers/            # COMPONENTES INTELIGENTES (Lógica y Datos)
-│   ├── LoginContainer.vue
-│   ├── BusquedaMascotasContainer.vue
-│   ├── PerfilUsuarioContainer.vue
-│   └── RegistroReporteContainer.vue
-│
-├── components/            # COMPONENTES PRESENTADORES (UI / Visual)
-│   ├── common/            # Botones, Inputs y Modales genéricos
-│   ├── Mascotas/          # CardMascota.vue, ListaMascotas.vue
-│   ├── Usuarios/          # FormLogin.vue, UserProfileCard.vue
-│   └── Mapa/              # MarcadorMapa.vue, VistaMapa.vue
-│
-├── views/                 # Páginas (Rutas de Vue Router)
-└── App.vue
-
-```
-
-## Links
-
-Repositorio backend: https://github.com/Raynagah/backend-eft-fullstack-III.git
-
-Link repositorio principal: https://github.com/Raynagah/EFT-Desarrollo-Fullstack-III.git
+*Desarrollado como parte del proyecto final de integración de arquitectura DevOps.*
